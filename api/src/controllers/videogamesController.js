@@ -1,10 +1,16 @@
-const { allVideogames } = require("../services/videogamesServices");
-
+const {
+  allVideogames,
+  createGame,
+  deleteGame,
+  getVideoGamesFromDatabase,
+  getVideoGamesFromAPI,
+} = require("../services/videogamesServices.js");
+const { validateNewGame } = require("../validation/validation.js");
 const getAllVideogames = async (req, res) => {
   try {
     const { name } = req.query;
     const videogames = await allVideogames();
-
+    console.log(videogames);
     if (name) {
       const filteredByName = videogames.filter((game) =>
         game.name.toLowerCase().includes(name.toLowerCase())
@@ -16,7 +22,7 @@ const getAllVideogames = async (req, res) => {
     }
     res.json(videogames);
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ Error: error.message });
   }
 };
 
@@ -34,15 +40,19 @@ const getVideogameById = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
-const getVideogamesByName = async (req, res) => {
+const createVideogame = async (req, res) => {
+  const errors = validateNewGame(req.body);
+  if (Object.keys(errors).length > 0) {
+    return { success: false, errors };
+  }
   try {
+    const gameCreated = await createGame(req.body);
+    res.status(201).json(gameCreated);
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ Error: error });
   }
 };
-
-const createVideogame = async (req, res) => {
+const deleteVideogame = async (req, res) => {
   try {
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
@@ -52,6 +62,5 @@ const createVideogame = async (req, res) => {
 module.exports = {
   getAllVideogames,
   getVideogameById,
-  getVideogamesByName,
   createVideogame,
 };
